@@ -1,0 +1,7 @@
+# use glob syntax.
+*.pyc
+.idea*
+.idea/*
+*.pyo
+*__pycache__*
+*pycache*
