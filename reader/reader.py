@@ -2,6 +2,7 @@
 
 import traceback
 import sys
+import networkx
 
 COLON_CHAR = ":"
 SPACE_CHAR = " "
@@ -16,6 +17,18 @@ NODE_COORD_SECTION_STR = "NODE_COORD_SECTION"
 EOF_STR = "EOF"
 TOUR_SECTION_STR = "TOUR_SECTION"
 
+import math
+
+def euc_2d(startx_starty, endx_endy):
+    """
+    Calculate eucldean distance between (startx, starty),(endx, endy)
+    :param startx_starty:(startx, starty)
+    :param endx_endy:(endx, endy)
+    :return:
+    """
+    startx, starty = startx_starty
+    endx, endy = endx_endy
+    return int(math.sqrt(pow(abs(startx - endx), 2) + pow(abs(starty - endy), 2)))
 
 def problem_reader(file_addr):
     """
@@ -31,6 +44,11 @@ def problem_reader(file_addr):
         print("Couldn't open : " + file_addr)
         traceback.print_exc()
         sys.exit()
+
+    # main graph
+    g = networkx.Graph()
+
+    # function stuff
     f_name = file.readline().split(COLON_CHAR)[1].strip()
     f_comment = file.readline().split(COLON_CHAR)[1].strip()
     f_type = file.readline().split(COLON_CHAR)[1].strip()
@@ -50,22 +68,37 @@ def problem_reader(file_addr):
     print("file edge type : " + f_edge_type)
 
     if NODE_COORD_SECTION_STR == file.readline().strip():
-        point_list = [None] * f_dimention
         for i in range(f_dimention):
             line = file.readline()
-            index, x, y = line.split(SPACE_CHAR)
+            index, _x, _y = line.split(SPACE_CHAR)
             index.strip()
-            x.strip()
-            y.strip()
-            point_list[i] = (int(x), int(y))
+            _x.strip()
+            _y.strip()
+            g.add_node(i, x=int(_x), y=int(_y))
     if EOF_STR == file.readline().strip():
         print("dataset read was successfull")
+
+    for i in range(0, len(g)):
+        for j in range(i + 1, len(g)):
+            if i == j:
+                continue
+            g.add_edge(i,j)
+            g[i][j]['d'] = euc_2d((g.node[i]['x'], g.node[i]['y']), (g.node[j]['x'], g.node[j]['y']))
     if __debug__:
-        print("Datalist length : " + str(len(point_list)))
-        print(point_list)
-    return (point_list)
-
-
+        print("len : " + str(len(g))  + ", node list : ")
+        for i in range(0, len(g)):
+            print("(" + str(i) + ":" + str(g.node[i]['x']) + ", " + str(g.node[i]['y']) + "),", end=' ')
+        print()
+        print("edge list : ")
+        for i in range(0, len(g) - 1):
+            print(str(i) + " (" + str(g.node[i]['x']) + ", " + str(g.node[i]['y']) + ")" + "=>")
+            for j in range(i + 1, len(g)):
+                if i == j:
+                    continue
+                print(str(g[i][j]['d']) + ":" + str(j) + ' ', end=' ')
+            print()
+    return g
+              
 def solution_reader(file_addr):
     """
     Read TSP solution file and Return solution

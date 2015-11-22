@@ -1,15 +1,20 @@
 #!/bin/python3
 
+DATASET_FILE = None
+DATASET_SOLUTION_FILE = None
+args = None
+points_solution_list = None
+X = 'x'
+Y = 'y'
+DISTANCE = 'd'
+
+
 import argparse
 import plot
 import reader
 import gaaco
 import os
 
-DATASET_FILE = None
-DATASET_SOLUTION_FILE = None
-args = None
-points_solution_list = None
 
 if not __debug__:
     parser = argparse.ArgumentParser()
@@ -33,5 +38,5 @@ if DATASET_SOLUTION_FILE is not None:
 
 file_path = os.path.abspath(DATASET_FILE)
 points_list = reader.reader.problem_reader(file_path)
-matrix = gaaco.init(points_list)
-plot.drawer.draw(points_list, points_solution_list, gaaco.gaaco.solve, matrix)
+#matrix = gaaco.init(points_list)
+#plot.drawer.draw(points_list, points_solution_list, gaaco.gaaco.solve, matrix)

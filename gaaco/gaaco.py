@@ -13,11 +13,11 @@ i5:|10,11,12,13,14,x|
 len : (n * (n - 1)) / 2
 """
 
-def solve(point_list, matrix):
+def solve(g):
     """
     Execute Gennetic-Ant Algorithm on matrix
     :param matrix:
     :return:
     """
     print("solve function")
-    return range(len(point_list))
+    pass
