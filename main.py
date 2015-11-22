@@ -27,4 +27,11 @@ if args.dataset_solution_file is not None:
 
 file_path = os.path.abspath(args.dataset_file)
 g = reader.reader.problem_reader(file_path)
+if args.dataset_solution_file is not None:
+    s = gaaco.gaaco.Solution(ps_list, g)
+    print("best solution : cost " + str(s.cost))
+    if __debug__:
+        print("length : " + str(len(s.solution)))
+        print("best solution object list :" + str(s.solution))
+gaaco.gaaco.populate(g)
 plot.drawer.draw(g, ps_list, gaaco.gaaco.solve)

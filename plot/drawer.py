@@ -36,17 +36,17 @@ def draw(g, ps_list, solve):
         plt.cla()
         init(g, ps_list)
         p = solve(g)
-#        for i in points:
-#                startx = g[p[i]]['x']
-#                starty = g[p[i]]['y']
-#                endx = g[p[i+1]['x']]
-#                endy = g[p[i+1]['y']]
-#                ax.plot([startx, endx], [starty, endy], lw=2.5, c='k')
-#        startx = g[p[0]]['x']
-#        starty = g[p[0]]['y']
-#        endx = g[p[len(ps_list) - 1]]['x']
-#        endy = g[p[len(ps_list) - 1]]['y']
-#        ax.plot([startx, endx], [starty, endy], lw=2.5, c='k')
+        for i in range(len(p) - 1):
+            startx = g.node[p[i]]['x']
+            starty = g.node[p[i]]['y']
+            endx = g.node[p[i+1]]['x']
+            endy = g.node[p[i+1]]['y']
+            ax.plot([startx, endx], [starty, endy], lw=0.1, c='b')
+        startx = g.node[p[0]]['x']
+        starty = g.node[p[0]]['y']
+        endx = g.node[p[len(ps_list) - 1]]['x']
+        endy = g.node[p[len(ps_list) - 1]]['y']
+        ax.plot([startx, endx], [starty, endy], lw=0.1, c='b')
         figure.canvas.draw()
 
     animation = anim.FuncAnimation(figure, update, init_func=init(g, ps_list))

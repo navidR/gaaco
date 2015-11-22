@@ -28,7 +28,7 @@ def euc_2d(startx_starty, endx_endy):
     """
     startx, starty = startx_starty
     endx, endy = endx_endy
-    return int(math.sqrt(pow(abs(startx - endx), 2) + pow(abs(starty - endy), 2)))
+    return float(math.sqrt(pow(abs(startx - endx), 2) + pow(abs(starty - endy), 2)))
 
 def problem_reader(file_addr):
     """
@@ -84,6 +84,7 @@ def problem_reader(file_addr):
                 continue
             g.add_edge(i,j)
             g[i][j]['d'] = euc_2d((g.node[i]['x'], g.node[i]['y']), (g.node[j]['x'], g.node[j]['y']))
+            g[i][j]['f'] = 0
     if __debug__:
         print("len : " + str(len(g))  + ", node list : ")
         for i in range(0, len(g)):
