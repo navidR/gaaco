@@ -1,7 +1,6 @@
 import random
 
-popsize = 100
-population = 0
+#popsize = 100
 
 class Solution():
     def __init__(self, solution, g):
@@ -55,12 +54,11 @@ def generate_solution(g):
     s = Solution(solution, g)
     return s
 
-def populate(g):
+def populate(g, popsize):
     """
     Populate first generation with random data
     :return:
     """
-    global population
     population = list()
     for i in range(0, len(g)):
         for j in range(i + 1, len(g)):
@@ -68,18 +66,38 @@ def populate(g):
     for i in range(0, popsize):
         population.append(generate_solution(g))
     population.sort()
+    for i in population:
+        print(i)
     return population
 
-def solve(g):
+def solve(g, population):
     """
-    Execute Gennetic-Ant Algorithm on matrix
+    Execute Genetic-Ant Algorithm on matrix
     :param matrix:
     :return:
     """
+    #population = None
     if __debug__:
         print("solve function")
     #print(population[0].cost)
     #print(population[0].solution)
-    #populate(g)
-    print("best Solution cost :" + str(population[0].cost))
+    #population = populate(g, popsize)
+    implement_algorithm(g, population)
+    print("best Solution cost : " + str(population[0].cost))
     return population[0].solution
+
+def implement_algorithm(g, population):
+    if __debug__:
+        print("Implement Algorithm")
+        ant(g, population)
+        
+def ant(g, population):
+    if __debug__:
+        print("ant function")
+    pass
+
+def genetic(g, population):
+    if __debug__:
+        print("genetic function")
+    pass
+

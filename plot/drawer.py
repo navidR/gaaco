@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as anim
 
 
-def draw(g, ps_list, solve):
+def draw(g, solve, population, i=2000, ps_list=None):
     figure = plt.figure()
     ax = figure.gca()
 
@@ -35,21 +35,23 @@ def draw(g, ps_list, solve):
         # Calculate Answers
         plt.cla()
         init(g, ps_list)
-        p = solve(g)
+        p = solve(g, population)
         for i in range(len(p) - 1):
             startx = g.node[p[i]]['x']
             starty = g.node[p[i]]['y']
             endx = g.node[p[i+1]]['x']
             endy = g.node[p[i+1]]['y']
-            ax.plot([startx, endx], [starty, endy], lw=0.1, c='b')
+            ax.plot([startx, endx], [starty, endy], lw=0.25, c='b')
         startx = g.node[p[0]]['x']
         starty = g.node[p[0]]['y']
         endx = g.node[p[len(ps_list) - 1]]['x']
         endy = g.node[p[len(ps_list) - 1]]['y']
-        ax.plot([startx, endx], [starty, endy], lw=0.1, c='b')
+        ax.plot([startx, endx], [starty, endy], lw=0.25, c='b')
         figure.canvas.draw()
 
-    animation = anim.FuncAnimation(figure, update, init_func=init(g, ps_list))
+    animation = anim.FuncAnimation(figure, update, init_func=init(g, ps_list), interval=i)
+    if __debug__:
+        print(animation)
     plt.show()
 
 # draw vertical line from (70,100) to (70, 250)
