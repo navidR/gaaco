@@ -153,6 +153,16 @@ def evaporate(g):
 
         
 def ant(g, population):
+    """
+    First Every ant is in index 0,
+    Then create a list of homes choosable from here range(1,len(g))
+    until you filled the travel repeat :
+        Then from available choice , pick up one of them based on roulette wheel
+        (carefull , you should sort them based of their phermone)
+    evaluate the route based on length
+    sort the population
+    return the population
+    """
     if __debug__:
         print("ant function")
     
