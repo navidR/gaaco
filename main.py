@@ -15,7 +15,8 @@ Y = 'y'
 DISTANCE = 'd'
 POPSIZE = 50
 INTERVAL = 2000
-FACTOR = 1.0 # Ant/Genetic
+FACTOR = 1.0 # Ant and Genetic
+EVAPORATION = 0.5
 
 #if not __debug__:
 parser = argparse.ArgumentParser()

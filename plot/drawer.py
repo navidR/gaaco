@@ -50,8 +50,7 @@ def draw(g, solve, population, i=2000, ps_list=None):
         figure.canvas.draw()
 
     animation = anim.FuncAnimation(figure, update, init_func=init(g, ps_list), interval=i)
-    if __debug__:
-        print(animation)
+    print(animation)
     plt.show()
 
 # draw vertical line from (70,100) to (70, 250)
