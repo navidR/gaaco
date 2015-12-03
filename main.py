@@ -13,7 +13,7 @@ points_solution_list = None
 X = 'x'
 Y = 'y'
 DISTANCE = 'd'
-POPSIZE = 50
+POPSIZE = 25
 INTERVAL = 2000
 FACTOR = 1.0 # Ant and Genetic
 EVAPORATION = 0.5
@@ -27,6 +27,7 @@ parser.add_argument("-p", "--population-number", help="number of solution in you
 parser.add_argument("-pr", "--profile", help="printf profiler information", default=False,  action='store_true')
 parser.add_argument("-i", "--interval", help="interval for drawing", type=int, default=INTERVAL)
 parser.add_argument("-ag", "--atg", help="Ant-Genetic population size ratio", type=float, default=FACTOR)
+parser.add_argument("-ng", "--no-gui", help="Without GUI", default=False, action='store_true')
 args = parser.parse_args()
 
 if args.dataset_solution_file is not None:
@@ -48,7 +49,11 @@ if args.dataset_solution_file is not None:
         print("length : " + str(len(s.solution)))
         print("best solution object list :" + str(s.solution))
 population = gaaco.gaaco.populate(g, POPSIZE)
-plot.drawer.draw(g,  gaaco.gaaco.solve, population, ps_list=ps_list, i=i)
+if args.no_gui is False:
+    plot.drawer.draw(g,  gaaco.gaaco.solve, population, ps_list=ps_list, i=i)
+else:
+    while True:
+        gaaco.gaaco.solve(g, population)
 if args.profile is True:
     pr.disable()
     pr.print_stats()

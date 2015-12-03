@@ -1,9 +1,14 @@
 import random
+import sys
+import time
+import copy
+import math
 
 #popsize = 100
-EVAPORATION_RATE = 0.5
-MAX_F = 0.9999
-MIN_F = 0.0000
+EVAPORATION_RATE = 0.20
+MAX_F = 0.9
+MIN_F = 0.1
+K_FACTOR = 0.80
 
 def debug_graph(g):
     file = open("debug_graph_nodes.output", 'w')
@@ -33,8 +38,20 @@ def debug_population(population):
         for j in range(0, len(population[i])):
             file.write("{0:3}".format(population[i][j]))
         file.write("\n")
-    
 
+def debug_phermone(g, population):
+    file = open("debug_phermone.output", 'w')
+    file.write("len of population is " + str(len(population)) + "\n")
+    file.write("len of solution is " + str(len(population[0])) + "\n")
+    for i in range(0, len(population)):
+        file.write(str(i) + ":")
+        for j in range(0, len(population[i]) - 1):
+            _f = g[population[i][j]][population[i][j + 1]]['f']
+            f = "{:.2f}".format(_f)
+            file.write(f + " ")
+        file.write("\n\n")
+    
+    
 class Solution():
     def __init__(self, solution, g):
         self.solution = solution
@@ -56,11 +73,13 @@ class Solution():
     def __ge__(self, other):
         return self.cost >= other.cost
     def __str__(self):
-        return str(self.cost) + " \n" + str(self.solution) + "\n"
+        return "{\n\tCost : " + "{0:.2f}".format(self.cost) + ",\n\tLength : " + str(len(self.solution)) + "\n\tData : " + str(self.solution) + "\n}"
     def __len__(self):
         return len(self.solution)
     def __getitem__(self, i):
         return self.solution[i]
+    def __setitem__(self, i, v):
+        self.solution[i] = v
 
 def test_generate_solution(l):
     """
@@ -73,7 +92,6 @@ def test_generate_solution(l):
             elif l[i] == l[j]:
                 print("generated data is wrong (" + str(i) + ", " + str(j) + ")")
                 print(l)
-                import sys
                 sys.exit()
     return
 
@@ -85,11 +103,29 @@ def generate_solution(g):
     solution = [None] * len(g)
     solution[0] = 0
     data = list(range(1, len(g)))
-    for i in range(1,len(g)):
+    for i in range(1, len(g)):
         p = random.randint(0,len(data) - 1)
         solution[i] = data.pop(p)
-    s = Solution(solution, g)
-    return s
+    return Solution(solution, g)
+
+def nearest_neighbor(g):
+    """
+    Generate Random Solution
+    Always first element is 0 and Last element is (len(g) - 1)
+    """
+    solution = [None] * len(g)
+    solution[0] = 0
+    data = list(range(1, len(g)))
+    for i in range(1, len(g)):
+        p = None
+        max_d = sys.maxsize
+        for j in range(0, len(g)):
+            if i != j and g[i][j]['d'] < max_d and j in data:
+                max_d = g[i][j]['d']
+                p = j
+        solution[i] = p
+        data.remove(p)
+    return Solution(solution, g)
 
 def populate(g, popsize):
     """
@@ -101,22 +137,30 @@ def populate(g, popsize):
     for i in range(0, len(g)):
         for j in range(i + 1, len(g)):
             g[i][j]['f'] = 0.0
-    for i in range(0, popsize):
+    population.append(nearest_neighbor(g))
+    for i in range(1, popsize):
         population.append(generate_solution(g))
     population.sort()
+    return update_phermone(g, population, popsize)
+
+def update_phermone(g, population, popsize):
     #for i in population:
     #    print(i)
-    step = (MAX_F - MIN_F) / (popsize + 1)
-    phermone = 0
-    print("phermone " + str(phermone))
-    print("step is " + str(step))
-    for i in reversed(range(0, popsize)):
+    #    i - len
+    #   ----------
+    #      len
+    #
+
+    for i in reversed(range(0, int(popsize / 20))):
+        p = abs((i - popsize) / popsize)
         for j in range(0, len(population[i].solution) - 1):
-            g[population[i].solution[j]][population[i].solution[j + 1]]['f'] = phermone
-        g[population[i].solution[0]][population[i].solution[len(g) - 1]]['f'] = phermone
-        phermone += step
-        if __debug__:
-            print("phermone in next step " + str(phermone))
+            g[population[i].solution[j]][population[i].solution[j + 1]]['f'] = p * (MAX_F - MIN_F)
+        g[population[i].solution[0]][population[i].solution[len(g) - 1]]['f'] = p * (MAX_F - MIN_F)
+
+    #print("debuging")
+    #for j in range(0, len(population[0].solution) - 1):
+    #    g[population[0].solution[j]][population[0].solution[j + 1]]['f'] = 0.99 * (MAX_F - MIN_F)
+    #    g[population[0].solution[0]][population[0].solution[len(g) - 1]]['f'] = 0.99 * (MAX_F - MIN_F)
     if __debug__:
         debug_population(population)
         debug_graph(g)
@@ -135,23 +179,50 @@ def solve(g, population):
     #print(population[0].solution)
     #population = populate(g, popsize)
     implement_algorithm(g, population)
-    print("best Solution cost : " + str(population[0].cost))
+    #print("Best Solution Cost : " + "{0:.2f}".format(population[0].cost) + " at : " + time.ctime())
     return population[0].solution
 
 def implement_algorithm(g, population):
     if __debug__:
         print("Implement Algorithm")
-    ant(g, population)
-    genetic(g, population)
+    for i in range(0, 2):
+        #debug_population(population)
+        ant(g, population)
+        print(str(i) + " Best Solution Cost A : " + "{0:.2f}".format(population[0].cost) + " at : " + time.ctime())
+        population = genetic(g, population)
+        print(str(i) + " Best Solution Cost G : " + "{0:.2f}".format(population[0].cost) + " at : " + time.ctime())
 
 def evaporate(g):
     if __debug__:
         print("evaporate")
     for i in range(0, len(g)):
         for j in range(i + 1, len(g)):
-            g[i][j]['f'] =  g[i][j]['f'] * (1 - EVAPORATION_RATE)
+            g[i][j]['f'] =  g[i][j]['f'] * (1.0 - EVAPORATION_RATE)
 
-        
+def ant_decision(g, solution, index):
+    #print("ant_decision")
+    #print(solution)
+    l = list()
+    for i in range(0, len(solution)):
+        if i not in solution[0:index]:
+            l.append(i)
+    #print(l)
+    wheel = 0.0
+    for i in l:
+        wheel += g[solution[index - 1]][i]['f']
+    # Most Important point of Random
+    #print("wheel is " + str(wheel))
+    r = random.uniform(0, wheel)
+    #print("r is " + str(r))
+    wheel = 0.0
+    for i in l:
+        wheel += g[solution[index - 1]][i]['f']
+        if wheel >= r:
+            #print("i is " + str(i))
+            return i
+    print("Error in Generating New Data")
+    sys.exit()
+    
 def ant(g, population):
     """
     First Every ant is in index 0,
@@ -165,15 +236,82 @@ def ant(g, population):
     """
     if __debug__:
         print("ant function")
-    
-        
-    population.sort()
 
-        
+    for i in range(int(len(population) / 20), len(population)):
+        # For every ant
+        for j in range(1, len(population[i]) - 1):
+            # For every ant's node
+            population[i][j + 1] = ant_decision(g, population[i], j + 1)
+        population[i].evaluate(g)
+    population.sort()
+    evaporate(g)
+    update_phermone(g, population, len(population))
+
+def parent(population, ignore=None):
+    wheel = 0.0
+    all_cost = 0.0
+    for i in range(0, len(population)):
+        all_cost = population[i].cost
+    for i in range(0, len(population)):
+        if i != ignore:
+            wheel += population[i].cost / all_cost
+    #print("wheel is "+ str(wheel))
+    r = random.uniform(0, wheel)
+    #print("r is " + str(r))
+    wheel = 0.0
+    for i in range(0, len(population)):
+        if i != ignore:
+            wheel += population[i].cost / all_cost
+            if wheel >= r:
+                #print(i)
+                return i
+    # copy.deepcopy(population[i].solution)
+
 def genetic(g, population):
     if __debug__:
         print("genetic function")
+    p = list()
+    for index in range(0, len(population)):
+        child = list()
+        parent_1_index = parent(population)
+        parent_2_index = parent(population, parent_1_index)
+        parent_1 = copy.deepcopy(population[parent_1_index].solution)
+        parent_2 = copy.deepcopy(population[parent_2_index].solution)
+        while len(parent_1) != 0:
+            #print("parent_1 : " + str(parent_1))
+            #print("parent_2 : " + str(parent_2))
+            #print("child : " + str(child))
+            new_len = math.ceil(K_FACTOR * len(parent_1))
+            for i in range(0, new_len):
+                child.append(parent_1.pop(0))
+            for i in range(0, len(child)):
+                if child[i] in parent_2:
+                    parent_2.remove(child[i])
+            parent_1, parent_2 = parent_2, parent_1
+            #if __debug__:
+        p.append(Solution(child, g))
+    p.sort()
+    print("p best cost " + str(p[0].cost))
+    p_index = 0
+    population_index = 0
+    new_population = list()
+    for i in range(0, len(population)):
+        if population[population_index].cost < p[p_index].cost:
+            new_population.append(population[population_index])
+            population_index += 1
+        else:
+            new_population.append(p[p_index])
+            p_index += 1
+    new_population.sort()
+    return new_population
 
-    population.sort()
 
 
+
+
+
+
+
+
+
+    

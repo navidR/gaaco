@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as anim
 
-
 def draw(g, solve, population, i=2000, ps_list=None):
     figure = plt.figure()
     ax = figure.gca()
@@ -41,12 +40,12 @@ def draw(g, solve, population, i=2000, ps_list=None):
             starty = g.node[p[i]]['y']
             endx = g.node[p[i+1]]['x']
             endy = g.node[p[i+1]]['y']
-            ax.plot([startx, endx], [starty, endy], lw=0.25, c='b')
+            ax.plot([startx, endx], [starty, endy], lw=0.5, c='r')
         startx = g.node[p[0]]['x']
         starty = g.node[p[0]]['y']
         endx = g.node[p[len(ps_list) - 1]]['x']
         endy = g.node[p[len(ps_list) - 1]]['y']
-        ax.plot([startx, endx], [starty, endy], lw=0.25, c='b')
+        ax.plot([startx, endx], [starty, endy], lw=0.5, c='r')
         figure.canvas.draw()
 
     animation = anim.FuncAnimation(figure, update, init_func=init(g, ps_list), interval=i)
