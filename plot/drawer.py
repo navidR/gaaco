@@ -4,7 +4,7 @@ import matplotlib.animation as anim
 def draw(g, solve, population, i=2000, ps_list=None):
     figure = plt.figure()
     ax = figure.gca()
-
+    
     def init(g, ps_list):
         for i in range(len(g)):
             ax.plot(g.node[i]['x'], g.node[i]['y'], "ko", markersize=8)
@@ -35,6 +35,8 @@ def draw(g, solve, population, i=2000, ps_list=None):
         plt.cla()
         init(g, ps_list)
         p = solve(g, population)
+        #print("p is " + str(p))
+        #print("len(p) : " + str(len(p)))
         for i in range(len(p) - 1):
             startx = g.node[p[i]]['x']
             starty = g.node[p[i]]['y']

@@ -5,10 +5,11 @@ import copy
 import math
 
 #popsize = 100
-EVAPORATION_RATE = 0.20
-MAX_F = 0.9
-MIN_F = 0.1
+EVAPORATION_RATE = 0.25
+#MAX_F = 0.9
+#MIN_F = 0.1
 K_FACTOR = 0.80
+Q_FACTOR = 1
 
 def debug_graph(g):
     file = open("debug_graph_nodes.output", 'w')
@@ -133,15 +134,15 @@ def populate(g, popsize):
     f for edge means phermone
     :return:
     """
-    population = list()
+    npopulation = list()
     for i in range(0, len(g)):
         for j in range(i + 1, len(g)):
-            g[i][j]['f'] = 0.0
-    population.append(nearest_neighbor(g))
+            g[i][j]['f'] = 0.5
+    npopulation.append(nearest_neighbor(g))
     for i in range(1, popsize):
-        population.append(generate_solution(g))
-    population.sort()
-    return update_phermone(g, population, popsize)
+        npopulation.append(generate_solution(g))
+    npopulation.sort()
+    return update_phermone(g, npopulation, popsize)
 
 def update_phermone(g, population, popsize):
     #for i in population:
@@ -151,11 +152,10 @@ def update_phermone(g, population, popsize):
     #      len
     #
 
-    for i in reversed(range(0, int(popsize / 20))):
-        p = abs((i - popsize) / popsize)
+    for i in range(0, popsize):
         for j in range(0, len(population[i].solution) - 1):
-            g[population[i].solution[j]][population[i].solution[j + 1]]['f'] = p * (MAX_F - MIN_F)
-        g[population[i].solution[0]][population[i].solution[len(g) - 1]]['f'] = p * (MAX_F - MIN_F)
+            g[population[i].solution[j]][population[i].solution[j + 1]]['f'] +=  1 / (i + 1)
+        g[population[i].solution[0]][population[i].solution[len(g) - 1]]['f'] +=  1 / (i + 1)
 
     #print("debuging")
     #for j in range(0, len(population[0].solution) - 1):
@@ -166,31 +166,25 @@ def update_phermone(g, population, popsize):
         debug_graph(g)
     return population
 
-def solve(g, population):
+def solve(g, population, repeat=False):
     """
     Execute Genetic-Ant Algorithm on matrix
     :param matrix:
     :return:
     """
-    #population = None
     if __debug__:
         print("solve function")
-    #print(population[0].cost)
-    #print(population[0].solution)
-    #population = populate(g, popsize)
-    implement_algorithm(g, population)
-    #print("Best Solution Cost : " + "{0:.2f}".format(population[0].cost) + " at : " + time.ctime())
-    return population[0].solution
+    while True:
+        for i in range(0, 5):
+            print(str(i) + " C1 " + "{0:.2f}".format(population[0].cost) + " C2 " + "{0:.2f}".format(population[1].cost) + " C3 " +"{0:.2f}".format(population[2].cost))
+            ant(g, population)
+            print(str(i) + " C1 " + "{0:.2f}".format(population[0].cost) + " C2 " + "{0:.2f}".format(population[1].cost) + " C3 " +"{0:.2f}".format(population[2].cost))
+            population = genetic(g, population)
+            print(str(i) + " C1 " + "{0:.2f}".format(population[0].cost) + " C2 " + "{0:.2f}".format(population[1].cost) + " C3 " +"{0:.2f}".format(population[2].cost))
+        if not repeat:
+            break
 
-def implement_algorithm(g, population):
-    if __debug__:
-        print("Implement Algorithm")
-    for i in range(0, 2):
-        #debug_population(population)
-        ant(g, population)
-        print(str(i) + " Best Solution Cost A : " + "{0:.2f}".format(population[0].cost) + " at : " + time.ctime())
-        population = genetic(g, population)
-        print(str(i) + " Best Solution Cost G : " + "{0:.2f}".format(population[0].cost) + " at : " + time.ctime())
+    return population[0].solution
 
 def evaporate(g):
     if __debug__:
@@ -199,29 +193,50 @@ def evaporate(g):
         for j in range(i + 1, len(g)):
             g[i][j]['f'] =  g[i][j]['f'] * (1.0 - EVAPORATION_RATE)
 
+class Edge():
+    def __init__(self, i, f):
+        self.i = i
+        self.f = f
+    def __lt__(self, other):
+        return self.f < other.f
+    def __le__(self, other):
+        return self.f <= other.f
+    def __eq__(self, other):
+        return self.f == other.f
+    def __gt__(self, other):
+        return self.f > other.f
+    def __ge__(self, other):
+        return self.f >= other.f
+    def __str__(self):
+        return "{\n\tPhermone : " + "{0:.2f}".format(self.f) + ",\n\tEdge : " + str(self.i) + "\n}"
+        
+
 def ant_decision(g, solution, index):
     #print("ant_decision")
     #print(solution)
     l = list()
+    all_p = 0.0
     for i in range(0, len(solution)):
         if i not in solution[0:index]:
-            l.append(i)
-    #print(l)
-    wheel = 0.0
+            #print("index : " + str(index) + " i " + str(i))
+            all_p += g[solution[index - 1]][i]['f']
+            e = Edge(i, g[solution[index - 1]][i]['f'])
+            l.append(e)
+    l.sort(reverse=True)
+    if all_p == 0:
+        for i in l:
+            print(i)
+        sys.exit()
+    def decision(probability):
+        return random.random() < probability
     for i in l:
-        wheel += g[solution[index - 1]][i]['f']
-    # Most Important point of Random
-    #print("wheel is " + str(wheel))
-    r = random.uniform(0, wheel)
-    #print("r is " + str(r))
-    wheel = 0.0
-    for i in l:
-        wheel += g[solution[index - 1]][i]['f']
-        if wheel >= r:
-            #print("i is " + str(i))
-            return i
-    print("Error in Generating New Data")
+        if decision(i.f / all_p):
+            return i.i
+        else:
+            all_p -= i.f
+    print("Wrong Data Return. Fatal Error")
     sys.exit()
+    
     
 def ant(g, population):
     """
@@ -237,7 +252,7 @@ def ant(g, population):
     if __debug__:
         print("ant function")
 
-    for i in range(int(len(population) / 20), len(population)):
+    for i in range(int(len(population)/20) + 1, len(population)):
         # For every ant
         for j in range(1, len(population[i]) - 1):
             # For every ant's node
@@ -291,11 +306,15 @@ def genetic(g, population):
             #if __debug__:
         p.append(Solution(child, g))
     p.sort()
-    print("p best cost " + str(p[0].cost))
+    #print("p best cost " + str(p[0].cost))
     p_index = 0
     population_index = 0
     new_population = list()
-    for i in range(0, len(population)):
+    keep = int(len(population) / 20) + 1
+    for i in range(0, keep):
+        new_population.append(population[population_index])
+        population_index += 1
+    for i in range(keep, len(population)):
         if population[population_index].cost < p[p_index].cost:
             new_population.append(population[population_index])
             population_index += 1
@@ -304,14 +323,3 @@ def genetic(g, population):
             p_index += 1
     new_population.sort()
     return new_population
-
-
-
-
-
-
-
-
-
-
-    

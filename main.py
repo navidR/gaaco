@@ -13,10 +13,11 @@ points_solution_list = None
 X = 'x'
 Y = 'y'
 DISTANCE = 'd'
-POPSIZE = 25
+POPSIZE = 50
 INTERVAL = 2000
 FACTOR = 1.0 # Ant and Genetic
 EVAPORATION = 0.5
+population = None
 
 #if not __debug__:
 parser = argparse.ArgumentParser()
@@ -50,10 +51,10 @@ if args.dataset_solution_file is not None:
         print("best solution object list :" + str(s.solution))
 population = gaaco.gaaco.populate(g, POPSIZE)
 if args.no_gui is False:
-    plot.drawer.draw(g,  gaaco.gaaco.solve, population, ps_list=ps_list, i=i)
+    plot.drawer.draw(g,  gaaco.gaaco.solve, population,ps_list=ps_list, i=i)
 else:
     while True:
-        gaaco.gaaco.solve(g, population)
+        gaaco.gaaco.solve(g, population, repeat=True)
 if args.profile is True:
     pr.disable()
     pr.print_stats()
