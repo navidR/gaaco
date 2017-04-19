@@ -2,7 +2,7 @@
 
 import matplotlib
 #matplotlib.use("GTK3Cairo")
-matplotlib.use('GTK3Agg')
+matplotlib.use('WXAgg')
 
 from . import drawer
 
